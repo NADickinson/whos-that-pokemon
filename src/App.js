@@ -4,6 +4,7 @@ import { randomPokemonNum, shuffle } from './utils/utils'
 import { CustomButton } from './components/customButton'
 import { Tally } from './components/tally'
 import { PokemonCanvas } from './components/PokemonCanvas'
+import { AudioButton } from './components/audioButton'
 
 const getFourPokemon = async () => {
   const idArray = []
@@ -28,6 +29,14 @@ export const App = () => {
   const [wrongPokemon, setWrongPokemon] = useState(undefined)
   const [correctTally, setCorrectTally] = useState(0)
   const [incorrectTally, setIncorrectTally] = useState(0)
+  const [isPokemonVisible, setIsPokemonVisible] = useState(false)
+  const [isMuted, setIsMuted] = useState(() => {
+    return window.localStorage.getItem('isMuted') === 'true'
+  })
+
+  useEffect(() => {
+    window.localStorage.setItem('isMuted', isMuted)
+  }, [isMuted])
 
   const loadPokemon = async () => {
     const fourPokemonNums = await getFourPokemon()
@@ -38,6 +47,18 @@ export const App = () => {
   useEffect(() => {
     loadPokemon()
   }, [])
+  const audio = useMemo(() => new Audio(), [])
+  useEffect(() => {
+    if (!currentCorrectPokemon) return
+
+    audio.src = './whos_that_pokemon.mp3'
+    audio.load()
+    audio.play()
+  }, [currentCorrectPokemon, audio])
+
+  useEffect(() => {
+    audio.muted = isMuted
+  }, [isMuted, audio])
 
   const shuffledArray = useMemo(() => {
     return currentCorrectPokemon && wrongPokemon ? shuffle([...wrongPokemon, currentCorrectPokemon]) : []
@@ -54,10 +75,20 @@ export const App = () => {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'row', flex: '1' }}>
-        <div>
-          {currentCorrectPokemon?.img ? <PokemonCanvas pokemon={currentCorrectPokemon.img}></PokemonCanvas> : undefined}
+        <div style={{ flex: 1, padding: '50px 0 0 220px' }}>
+          {currentCorrectPokemon?.img ? (
+            <PokemonCanvas pokemon={currentCorrectPokemon.img} isPokemonVisible={isPokemonVisible}></PokemonCanvas>
+          ) : undefined}
         </div>
         <Tally rightTally={correctTally} wrongTally={incorrectTally} />
+        <div style={{ position: 'absolute', top: 0, left: 0, padding: '20px' }}>
+          <AudioButton
+            isMuted={isMuted}
+            onClick={() => {
+              setIsMuted(!isMuted)
+            }}
+          />
+        </div>
       </div>
 
       <div
@@ -76,7 +107,11 @@ export const App = () => {
                   onClick={() => {
                     if (pokemon.id === currentCorrectPokemon.id) {
                       setCorrectTally(correctTally + 1)
-                      loadPokemon()
+                      setIsPokemonVisible(true)
+                      setTimeout(async () => {
+                        await loadPokemon()
+                        setIsPokemonVisible(false)
+                      }, 2500)
                     } else {
                       setIncorrectTally(incorrectTally + 1)
                     }

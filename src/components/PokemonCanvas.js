@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 
-export const PokemonCanvas = ({ pokemon }) => {
+export const PokemonCanvas = ({ pokemon, isPokemonVisible }) => {
   useEffect(() => {
+    console.log(pokemon, isPokemonVisible)
     console.log(canvasRef)
     const canvas = canvasRef.current
     if (!(canvas instanceof HTMLCanvasElement)) {
@@ -18,11 +19,14 @@ export const PokemonCanvas = ({ pokemon }) => {
       canvas.style.width = '400px'
       canvas.style.height = '400px'
       context.drawImage(img, 0, 0)
-      context.globalCompositeOperation = 'source-in'
-      context.fillRect(0, 0, canvas.width, canvas.height)
+      if (!isPokemonVisible) {
+        context.globalCompositeOperation = 'source-in'
+        context.fillRect(0, 0, canvas.width, canvas.height)
+        context.globalCompositeOperation = 'source-over'
+      }
     })
     img.src = pokemon
-  }, [pokemon])
+  }, [pokemon, isPokemonVisible])
   const canvasRef = useRef(null)
   return <canvas ref={canvasRef}></canvas>
 }
