@@ -2,8 +2,6 @@ import { useEffect, useRef } from 'react'
 
 export const PokemonCanvas = ({ pokemon, isPokemonVisible }) => {
   useEffect(() => {
-    console.log(pokemon, isPokemonVisible)
-    console.log(canvasRef)
     const canvas = canvasRef.current
     if (!(canvas instanceof HTMLCanvasElement)) {
       return
