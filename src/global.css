@@ -40,4 +40,5 @@ body {
 
 .custom-button:hover {
   box-shadow: 0 0 0 5px #fecb03;
+  background-color: #054477;
 }
